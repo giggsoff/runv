@@ -5,7 +5,6 @@ package xenpv
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os/exec"
 
 	"github.com/golang/glog"

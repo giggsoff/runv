@@ -856,7 +856,7 @@ func (Ctx *Context) Open() (err error) {
 	}
 
 	ret := C.libxl_ctx_alloc(&Ctx.ctx, C.LIBXL_VERSION,
-		0, unsafe.Pointer(Ctx.logger))
+		0, (*C.xentoollog_logger)(unsafe.Pointer(Ctx.logger)))
 
 	if ret != 0 {
 		err = Error(-ret)
@@ -871,7 +871,7 @@ func (Ctx *Context) Close() (err error) {
 	if ret != 0 {
 		err = Error(-ret)
 	}
-	C.xtl_logger_destroy(unsafe.Pointer(Ctx.logger))
+	C.xtl_logger_destroy((*C.xentoollog_logger)(unsafe.Pointer(Ctx.logger)))
 	return
 }
 
@@ -1013,7 +1013,7 @@ func (Ctx *Context) DomainUnpause(Id Domid) (err error) {
 		return
 	}
 
-	ret := C.libxl_domain_unpause(Ctx.ctx, C.uint32_t(Id))
+	ret := C.libxl_domain_unpause(Ctx.ctx, C.uint32_t(Id), nil)
 
 	if ret != 0 {
 		err = Error(-ret)
@@ -1028,7 +1028,7 @@ func (Ctx *Context) DomainPause(id Domid) (err error) {
 		return
 	}
 
-	ret := C.libxl_domain_pause(Ctx.ctx, C.uint32_t(id))
+	ret := C.libxl_domain_pause(Ctx.ctx, C.uint32_t(id), nil)
 
 	if ret != 0 {
 		err = Error(-ret)
@@ -1043,7 +1043,7 @@ func (Ctx *Context) DomainShutdown(id Domid) (err error) {
 		return
 	}
 
-	ret := C.libxl_domain_shutdown(Ctx.ctx, C.uint32_t(id))
+	ret := C.libxl_domain_shutdown(Ctx.ctx, C.uint32_t(id), nil)
 
 	if ret != 0 {
 		err = Error(-ret)
@@ -1058,7 +1058,7 @@ func (Ctx *Context) DomainReboot(id Domid) (err error) {
 		return
 	}
 
-	ret := C.libxl_domain_reboot(Ctx.ctx, C.uint32_t(id))
+	ret := C.libxl_domain_reboot(Ctx.ctx, C.uint32_t(id), nil)
 
 	if ret != 0 {
 		err = Error(-ret)
@@ -1172,7 +1172,7 @@ func (Ctx *Context) ConsoleGetTty(id Domid, consNum int, conType ConsoleType) (p
 		err = Error(-ret)
 		return
 	}
-	defer C.free(cpath)
+	defer C.free(unsafe.Pointer(cpath))
 
 	path = C.GoString(cpath)
 	return
@@ -1192,7 +1192,7 @@ func (Ctx *Context) PrimaryConsoleGetTty(domid uint32) (path string, err error) 
 		err = Error(-ret)
 		return
 	}
-	defer C.free(cpath)
+	defer C.free(unsafe.Pointer(cpath))
 
 	path = C.GoString(cpath)
 	return
