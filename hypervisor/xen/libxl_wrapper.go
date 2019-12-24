@@ -777,6 +777,9 @@ static inline xentoollog_logger_hyperxl* xtl_createlogger_hyperxl
 
     return HYPER_XTL_NEW_LOGGER(hyperxl, newlogger);
 }
+static inline int size_of_hyperxl_domain_config(){
+	return sizeof(hyperxl_domain_config);
+}
 */
 import "C"
 
@@ -818,13 +821,27 @@ const (
 
 func (dc *DomainConfig) toC() *C.struct_hyperxl_domain_config {
 	l := len(dc.Extra)
-	extra := make([]unsafe.Pointer, l+1)
+	cExtra := (**C.char)(C.malloc(C.ulong(l+1) * C.ulong(unsafe.Sizeof(uintptr(0)))))
+	extra := (*[1 << 30]*C.char)(unsafe.Pointer(cExtra))[: l+1 : l+1]
 	for i := 0; i < l; i++ {
-		extra[i] = unsafe.Pointer(C.CString(dc.Extra[i]))
+		extra[i] = C.CString(dc.Extra[i])
 	}
-	extra[l] = unsafe.Pointer(nil)
+	extra[l] = nil
 
-	return &C.struct_hyperxl_domain_config{
+	config := (*C.struct_hyperxl_domain_config)(C.malloc(C.size_t(int(C.size_of_hyperxl_domain_config()))))
+	config.hvm = (C.bool)(dc.Hvm)
+	config.domid = 0
+	config.ev = unsafe.Pointer(nil)
+	config.name = C.CString(dc.Name)
+	config.kernel = C.CString(dc.Kernel)
+	config.initrd = C.CString(dc.Initrd)
+	config.cmdline = C.CString(dc.Cmdline)
+	config.max_vcpus = (C.int)(dc.MaxVcpus)
+	config.max_memory_kb = (C.int)(dc.MaxMemory)
+	config.console_sock = C.CString(dc.ConsoleSock)
+	config.extra = unsafe.Pointer(&cExtra)
+	return config
+	/*return &C.struct_hyperxl_domain_config{
 		hvm:           (C.bool)(dc.Hvm),
 		domid:         0,
 		ev:            unsafe.Pointer(nil),
@@ -835,8 +852,8 @@ func (dc *DomainConfig) toC() *C.struct_hyperxl_domain_config {
 		max_vcpus:     (C.int)(dc.MaxVcpus),
 		max_memory_kb: (C.int)(dc.MaxMemory),
 		console_sock:  C.CString(dc.ConsoleSock),
-		extra:         unsafe.Pointer(&extra),
-	}
+		extra:         unsafe.Pointer(&cExtra),
+	}*/
 }
 
 func loadXenLib() error {
