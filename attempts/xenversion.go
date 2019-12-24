@@ -10,7 +10,7 @@ static inline int testNil(const char ***test_input)
    int i = 0;
    if (*test_input)
         while ((*test_input)[i]){
-			printf("%s\n", test_input[i]);
+			printf("%s\n", (*test_input)[i]);
 			printf("%d\n", i);
             i++;
 		}
@@ -219,6 +219,6 @@ func main() {
 		arrayPtr[i] = (*C.char)(cstr)
 	}
 	arrayPtr[l] = nil
-	res := C.testNil(cExtra)
+	res := C.testNil((***C.char)(unsafe.Pointer(&cExtra)))
 	fmt.Printf("Test: %d", int(res))
 }
