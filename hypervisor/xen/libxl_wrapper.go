@@ -780,6 +780,12 @@ static inline xentoollog_logger_hyperxl* xtl_createlogger_hyperxl
 static inline int size_of_hyperxl_domain_config(){
 	return sizeof(hyperxl_domain_config);
 }
+static inline int size_of_hyperxl_nic_config(){
+	return sizeof(hyperxl_nic_config);
+}
+static inline int size_of_hyperxl_disk_config(){
+	return sizeof(hyperxl_disk_config);
+}
 */
 import "C"
 
@@ -909,13 +915,13 @@ func HyperxlDomainCheck(ctx LibxlCtxPtr, domid uint32) int {
 
 //int hyperxl_nic_add(libxl_ctx* ctx, uint32_t domid, hyperxl_nic_config* config);
 func HyperxlNicAdd(ctx LibxlCtxPtr, domid uint32, ip, bridge, gatewaydev, ifname string, mac []byte) int {
-	var nic *HyperxlNicConfig = &HyperxlNicConfig{
-		ip:         C.CString(ip),
-		bridge:     C.CString(bridge),
-		gatewaydev: C.CString(gatewaydev),
-		mac:        (*C.char)(unsafe.Pointer(&mac[0])),
-		ifname:     C.CString(ifname),
-	}
+
+	nic := (*C.struct_hyperxl_nic_config)(C.malloc(C.size_t(int(C.size_of_hyperxl_nic_config()))))
+	nic.ip = C.CString(ip)
+	nic.bridge = C.CString(bridge)
+	nic.gatewaydev = C.CString(gatewaydev)
+	nic.mac = (*C.char)(unsafe.Pointer(&mac[0]))
+	nic.ifname = C.CString(ifname)
 	return (int)(C.hyperxl_nic_add((*C.struct_libxl__ctx)(ctx), (C.uint32_t)(domid), (*C.struct_hyperxl_nic_config)(nic)))
 }
 
@@ -926,23 +932,21 @@ func HyperxlNicRemove(ctx LibxlCtxPtr, domid uint32, mac string) int {
 
 //int hyperxl_disk_add(libxl_ctx* ctx, uint32_t domid,hyperxl_disk_config* config);
 func HyperxlDiskAdd(ctx LibxlCtxPtr, domid uint32, source, target string, backend LibxlDiskBackend, format LibxlDiskFormat) int {
-	var disk *HyperxlDiskConfig = &HyperxlDiskConfig{
-		source:  C.CString(source),
-		target:  C.CString(target),
-		backend: (C.libxl_disk_backend)(backend),
-		format:  (C.libxl_disk_format)(format),
-	}
+	disk := (*C.struct_hyperxl_disk_config)(C.malloc(C.size_t(int(C.size_of_hyperxl_disk_config()))))
+	disk.source = C.CString(source)
+	disk.target = C.CString(target)
+	disk.backend = (C.libxl_disk_backend)(backend)
+	disk.format = (C.libxl_disk_format)(format)
 	return (int)(C.hyperxl_disk_add((*C.struct_libxl__ctx)(ctx), (C.uint32_t)(domid), (*C.struct_hyperxl_disk_config)(disk)))
 }
 
 //int hyperxl_disk_remove(libxl_ctx* ctx, uint32_t domid,hyperxl_disk_config* config);
 func HyperxlDiskRemove(ctx LibxlCtxPtr, domid uint32, source, target string, backend LibxlDiskBackend, format LibxlDiskFormat) int {
-	var disk *HyperxlDiskConfig = &HyperxlDiskConfig{
-		source:  C.CString(source),
-		target:  C.CString(target),
-		backend: (C.libxl_disk_backend)(backend),
-		format:  (C.libxl_disk_format)(format),
-	}
+	disk := (*C.struct_hyperxl_disk_config)(C.malloc(C.size_t(int(C.size_of_hyperxl_disk_config()))))
+	disk.source = C.CString(source)
+	disk.target = C.CString(target)
+	disk.backend = (C.libxl_disk_backend)(backend)
+	disk.format = (C.libxl_disk_format)(format)
 	return (int)(C.hyperxl_disk_remove((*C.struct_libxl__ctx)(ctx), (C.uint32_t)(domid), (*C.struct_hyperxl_disk_config)(disk)))
 }
 
